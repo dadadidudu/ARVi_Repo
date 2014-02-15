@@ -5,6 +5,7 @@ import android.os.Bundle;
 import android.app.Activity;
 import android.view.Menu;
 import android.view.ViewGroup.LayoutParams;
+import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.FrameLayout;
 import android.widget.RelativeLayout;
@@ -15,7 +16,7 @@ public class MainActivity extends Activity {
 
 	public static Activity act;
 	
-	private Camera cam;
+	private static Camera cam;
 	private CameraSurface cs;
 	private DrawingSurface ds;
 	private FrameLayout flay;
@@ -33,7 +34,7 @@ public class MainActivity extends Activity {
 		act = this;
 		
 		// get camera instance
-		this.cam = getCameraInstance();
+		MainActivity.cam = getCameraInstance();
 		/* create FrameView and Surfaces -- done in onResume()
 		this.flay = new FrameLayout(this);
 		this.cs = new CameraSurface(this, cam);
@@ -50,6 +51,11 @@ public class MainActivity extends Activity {
 		// add to Relative
 		interactionThings.addView(button);
 		interactionThings.addView(tv);
+		
+		// force total fullscreen and keep screen on
+		getWindow().addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
+		getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+				
 	}
 
 	@Override
@@ -63,6 +69,7 @@ public class MainActivity extends Activity {
 	@Override
 	protected void onPause()
 	{
+		super.onPause();
 		if (inPreview)
 			cam.stopPreview();
 		
@@ -77,7 +84,10 @@ public class MainActivity extends Activity {
 		{
 	        //ds.onPause();
 	    }
-		super.onPause();
+		if (flay != null) {
+			flay.removeAllViews();
+			flay = null;
+		}
 	}
 	
 	@Override
@@ -126,16 +136,16 @@ public class MainActivity extends Activity {
 	
 	public static Camera getCameraInstance()
 	{
-		Camera c = null;
+		cam = null;
 	    try
 	    {
-	        c = Camera.open(); // attempt to get a Camera instance
+	        cam = Camera.open(); // attempt to get a Camera instance
 	    }
 	    catch (Exception e)
 	    {
 	        // Camera is not available (in use or does not exist)
 	    }
-	    return c; // returns null if camera is unavailable
+	    return cam; // returns null if camera is unavailable
 	}
 	
 	public void startPreview()

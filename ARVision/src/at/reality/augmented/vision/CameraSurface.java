@@ -3,27 +3,24 @@ package at.reality.augmented.vision;
 import java.io.IOException;
 
 import android.content.Context;
-import android.content.SharedPreferences;
-import android.content.res.AssetManager;
 import android.graphics.Canvas;
-import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
-import android.view.View;
-import android.widget.ImageView;
-import android.widget.ProgressBar;
-import android.widget.TextView;
+import android.os.Build;
+import android.renderscript.Allocation;
+import android.renderscript.Element;
+import android.renderscript.RenderScript;
+import android.renderscript.ScriptIntrinsicYuvToRGB;
+import android.renderscript.Type;
 import android.util.AttributeSet;
 import android.util.Log;
+import android.annotation.TargetApi;
 import android.app.Activity;
 import android.graphics.Bitmap;
 import android.graphics.Bitmap.Config;
-import android.graphics.BitmapFactory;
-import android.graphics.Color;
-import android.graphics.Matrix;
+import android.graphics.ImageFormat;
 import android.graphics.Paint;
-import android.graphics.Typeface;
 import android.hardware.Camera;
 import android.hardware.Camera.*;
 
@@ -43,6 +40,7 @@ public class CameraSurface extends SurfaceView implements SurfaceHolder.Callback
 	private SurfaceHolder cholder;
 	private Paint paint = new Paint();
 	//private DrawingSurface ds;
+	private YUVToRGBDecoder decoder;
 	
 	// Bild
 	private static Bitmap bmp;
@@ -66,6 +64,7 @@ public class CameraSurface extends SurfaceView implements SurfaceHolder.Callback
 		cholder.addCallback(this);
 		setFocusable(true);
 		this.context = context;
+		initDecoder();
 	}
 	
 	public CameraSurface(Context context, Camera c)
@@ -76,6 +75,7 @@ public class CameraSurface extends SurfaceView implements SurfaceHolder.Callback
 		cholder.addCallback(this);
 		this.context = context;
 		this.cam = c;
+		initDecoder();
 	}
 	
 	public CameraSurface(Context context, AttributeSet attrs)
@@ -98,6 +98,10 @@ public class CameraSurface extends SurfaceView implements SurfaceHolder.Callback
 		setFocusable(true);
 		this.context = context;
 		*/
+	}
+	
+	private void initDecoder() {
+		decoder = new IntrinsicsDecoder();
 	}
 	// Constructors end
 	
@@ -288,27 +292,21 @@ public class CameraSurface extends SurfaceView implements SurfaceHolder.Callback
 	 */ 
 	@Override
 	public void onPreviewFrame(byte[] data, Camera camera)
-	{
+	{	
 		//transforms NV21 pixel data into RGB pixels 
 		beginT = System.currentTimeMillis();
-        decodeYUV420SP(pixels, data, previewSize.width, previewSize.height);
+		// Bitmap wird decoded und mit dem Bild der Kamera befuellt
+        bmp = decoder.decode(data, previewSize.width, previewSize.height);
         endT = System.currentTimeMillis();
-		totalRunT = (endT - beginT);
+		totalRunT += (endT - beginT);
 		execCount++;
-		Log.i("CameraSurf", "runtime for decodeYUV() = "+ totalRunT);
-		
-		
-		// Bitmap wird mit dem Bild der Kamera befuellt
-		beginT = System.currentTimeMillis();
-		bmp = Bitmap.createBitmap(pixels, previewSize.width, previewSize.height, Config.ARGB_8888);
-		endT = System.currentTimeMillis();
-		totalRunT = (endT - beginT);
-		
+		Log.i("CameraSurf", "runtime for this decode() = "+ (endT - beginT));
+		Log.i("CameraSurf", "relative runtime for all calls of decode() = "+ totalRunT/execCount);
+				
         //Outuput the value of the top left pixel in the preview to LogCat  
 		// TODO: not sure if works, please check
 		// anm: performance um die 200-300ms fuer Erstellung der Bitmap, Programm aber recht unfluessig, maybe bec.of conversion
 		Log.i("CameraSurf", "The top right pixel has the following value: " + bmp.getPixel(0, 0));
-		Log.i("CameraSurf", "runtime for createBitmap() = "+ totalRunT);
 		
 		/*
         Log.i("Pixels", "The top right pixel has the following RGB (hexadecimal) values:"  
@@ -324,52 +322,7 @@ public class CameraSurface extends SurfaceView implements SurfaceHolder.Callback
 		*/
 	}
 	
-	// conversion to RGB
-	// needs ca 1500 - 3000 ms of time
-	void decodeYUV420SP(int[] rgb, byte[] yuv420sp, int width, int height)
-	{  
-        
-        final int frameSize = width * height;  
-
-        for (int j = 0, yp = 0; j < height; j++) {       int uvp = frameSize + (j >> 1) * width, u = 0, v = 0;  
-          for (int i = 0; i < width; i++, yp++) {  
-            int y = (0xff & ((int) yuv420sp[yp])) - 16;  
-            if (y < 0)  
-              y = 0;  
-            if ((i & 1) == 0) {  
-              v = (0xff & yuv420sp[uvp++]) - 128;  
-              u = (0xff & yuv420sp[uvp++]) - 128;  
-            }  
-
-            int y1192 = 1192 * y;  
-            int r = (y1192 + 1634 * v);  
-            int g = (y1192 - 833 * v - 400 * u);  
-            int b = (y1192 + 2066 * u);  
-
-            if (r < 0)                  
-            	r = 0;               
-            else if (r > 262143)  
-               r = 262143;  
-            
-            if (g < 0)                  
-            	g = 0;               
-            else if (g > 262143)  
-               g = 262143;
-            
-            if (b < 0)                  
-            	b = 0;               
-            else if (b > 262143)  
-               b = 262143;  
-
-            //RGB[i][j][0] = r;
-            //RGB[i][j][1] = g;
-            //RGB[i][j][2] = b;
-            
-            rgb[yp] = 0xff000000 | ((r << 6) & 0xff0000) | ((g >> 2) & 0xff00) | ((b >> 10) & 0xff);
-            
-          }  
-        }  
-      }
+	
       
 	
 	/*
@@ -387,60 +340,162 @@ public class CameraSurface extends SurfaceView implements SurfaceHolder.Callback
         Log.i("CamSurf","runtime == " + totalRunT);
 		
 	}
-	
-	/**
-	 * Converts YUV420 NV21 to RGB8888
-	 * is about 1500ms fast
-	 * 
-	 * @param data byte array on YUV420 NV21 format.
-	 * @param width pixels width
-	 * @param height pixels height
-	 * @return a RGB8888 pixels int array. Where each int is a pixels ARGB. 
-	 *
-	 *
-	public static int[] convertYUV420_NV21toRGB8888(byte [] data, int width, int height)
-	{
-	    int size = width*height;
-	    int offset = size;
-	    int[] pixels = new int[size];
-	    int u, v, y1, y2, y3, y4;
-
-	    // i percorre os Y and the final pixels
-	    // k percorre os pixles U e V
-	    for(int i=0, k=0; i < size; i+=2, k+=2) {
-	        y1 = data[i  ]&0xff;
-	        y2 = data[i+1]&0xff;
-	        y3 = data[width+i  ]&0xff;
-	        y4 = data[width+i+1]&0xff;
-
-	        u = data[offset+k  ]&0xff;
-	        v = data[offset+k+1]&0xff;
-	        u = u-128;
-	        v = v-128;
-
-	        pixels[i  ] = convertYUVtoRGB(y1, u, v);
-	        pixels[i+1] = convertYUVtoRGB(y2, u, v);
-	        pixels[width+i  ] = convertYUVtoRGB(y3, u, v);
-	        pixels[width+i+1] = convertYUVtoRGB(y4, u, v);
-
-	        if (i!=0 && (i+2)%width==0)
-	            i+=width;
-	    }
-
-	    return pixels;
-	}
-
-	private static int convertYUVtoRGB(int y, int u, int v)
-	{
-	    int r,g,b;
-
-	    r = y + (int)1.402f*v;
-	    g = y - (int)(0.344f*u +0.714f*v);
-	    b = y + (int)1.772f*u;
-	    r = r>255? 255 : r<0 ? 0 : r;
-	    g = g>255? 255 : g<0 ? 0 : g;
-	    b = b>255? 255 : b<0 ? 0 : b;
-	    return 0xff000000 | (b<<16) | (g<<8) | r;
-	}
 	*/
+
+	// ~200ms
+	public class Decoder1 implements YUVToRGBDecoder {
+		public Bitmap decode(byte[] yuv420sp, int width, int height)
+		{
+
+			final int frameSize = width * height;
+			int[] rgb = new int[frameSize];
+
+			for (int j = 0, yp = 0; j < height; j++) {
+				int uvp = frameSize + (j >> 1) * width, u = 0, v = 0;  
+				for (int i = 0; i < width; i++, yp++) {  
+					int y = (0xff & ((int) yuv420sp[yp])) - 16;  
+					if (y < 0)  
+						y = 0;  
+					if ((i & 1) == 0) {  
+						v = (0xff & yuv420sp[uvp++]) - 128;  
+						u = (0xff & yuv420sp[uvp++]) - 128;  
+					}  
+
+					int y1192 = 1192 * y;  
+					int r = (y1192 + 1634 * v);  
+					int g = (y1192 - 833 * v - 400 * u);  
+					int b = (y1192 + 2066 * u);  
+
+					if (r < 0)                  
+						r = 0;               
+					else if (r > 262143)  
+						r = 262143;  
+
+					if (g < 0)                  
+						g = 0;               
+					else if (g > 262143)  
+						g = 262143;
+
+					if (b < 0)                  
+						b = 0;               
+					else if (b > 262143)  
+						b = 262143;  
+
+					//RGB[i][j][0] = r;
+					//RGB[i][j][1] = g;
+					//RGB[i][j][2] = b;
+
+					rgb[yp] = 0xff000000 | ((r << 6) & 0xff0000) | ((g >> 2) & 0xff00) | ((b >> 10) & 0xff);
+
+				}  
+			}
+			return Bitmap.createBitmap(rgb, width, height, Config.ARGB_8888);
+		}
+	}
+
+	// ~150ms
+	public class Decoder2 implements YUVToRGBDecoder {
+		public Bitmap decode(byte[] data, int width, int height)
+		{
+			int size = width*height;
+			int offset = size;
+			int[] rgb = new int[size];
+			int u, v, y1, y2, y3, y4;
+
+			// i percorre os Y and the final pixels
+			// k percorre os pixles U e V
+			for(int i=0, k=0; i < size; i+=2, k+=2) {
+				y1 = data[i  ]&0xff;
+				y2 = data[i+1]&0xff;
+				y3 = data[width+i  ]&0xff;
+				y4 = data[width+i+1]&0xff;
+
+				u = data[offset+k  ]&0xff;
+				v = data[offset+k+1]&0xff;
+				u = u-128;
+				v = v-128;
+
+				rgb[i  ] = convertYUVtoRGB(y1, u, v);
+				rgb[i+1] = convertYUVtoRGB(y2, u, v);
+				rgb[width+i  ] = convertYUVtoRGB(y3, u, v);
+				rgb[width+i+1] = convertYUVtoRGB(y4, u, v);
+
+				if (i!=0 && (i+2)%width==0)
+					i+=width;
+			}
+			
+			return Bitmap.createBitmap(rgb, width, height, Config.ARGB_8888);
+		}
+
+		private int convertYUVtoRGB(int y, int u, int v)
+		{
+			int r,g,b;
+
+			r = y + (int)1.402f*v;
+			g = y - (int)(0.344f*u +0.714f*v);
+			b = y + (int)1.772f*u;
+			r = r>255? 255 : r<0 ? 0 : r;
+			g = g>255? 255 : g<0 ? 0 : g;
+			b = b>255? 255 : b<0 ? 0 : b;
+			return 0xff000000 | (b<<16) | (g<<8) | r;
+		}
+
+
+	}
+
+	// ~50ms!
+	@TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR2)
+	public class IntrinsicsDecoder implements YUVToRGBDecoder {
+		
+		// Variablen
+		private RenderScript rs;
+		private ScriptIntrinsicYuvToRGB intrinsic;
+		private Type.Builder tb1, tb2;
+		private Allocation allocIn, allocOut;
+		private Bitmap out;
+		
+		// Anm: moegliches Problem ist, dass das zu oft created bzw aufgerufen wird
+		// -> evtl als singleton umsetzen?
+		// oder static RenderScript
+		
+		public IntrinsicsDecoder() {
+			rs = RenderScript.create(MainActivity.act);
+			intrinsic = ScriptIntrinsicYuvToRGB.create(rs, Element.U8_4(rs));
+		}
+		
+		public Bitmap decode(byte[] data, int width, int height) {
+						
+			tb1 = new Type.Builder(rs, Element.createPixel(rs, Element.DataType.UNSIGNED_8, Element.DataKind.PIXEL_YUV));
+			tb1.setX(width);
+			tb1.setY(height);
+			tb1.setMipmaps(false);
+			tb1.setYuvFormat(ImageFormat.NV21); // API 18!
+			allocIn = Allocation.createTyped(rs, tb1.create());
+			allocIn.copyFrom(data);
+			
+			tb2 = new Type.Builder(rs, Element.RGBA_8888(rs));
+			tb2.setX(width);
+			tb2.setY(height);
+			tb2.setMipmaps(false);
+			allocOut = Allocation.createTyped(rs, tb2.create());
+			
+			intrinsic.setInput(allocIn);
+			intrinsic.forEach(allocOut);
+			
+			out = Bitmap.createBitmap(width, height, Config.ARGB_8888);
+			allocOut.copyTo(out);
+			
+			// clean vars
+			allocIn = null;
+			allocOut = null;
+			
+			return out;
+			
+		}
+	}
 }
+
+
+
+
+
