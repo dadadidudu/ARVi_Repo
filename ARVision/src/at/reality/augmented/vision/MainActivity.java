@@ -120,7 +120,6 @@ public class MainActivity extends Activity {
 		
 		cs.setCamera(cam);
 		startPreview();
-		inPreview = true;
 	}
 	
 	@Override
