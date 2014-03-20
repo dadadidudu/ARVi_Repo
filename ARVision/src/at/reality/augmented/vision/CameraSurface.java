@@ -156,6 +156,8 @@ public class CameraSurface extends SurfaceView implements SurfaceHolder.Callback
 	public void surfaceChanged(SurfaceHolder holder, int format, int width,
 			int height)
 	{
+		Log.e(TAG, "called SurfaceChanged()-method");
+		
 		if (cholder.getSurface() == null) // preview surface does not exist
 			return;
 		/*
