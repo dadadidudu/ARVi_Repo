@@ -3,6 +3,7 @@ package at.reality.augmented.vision;
 import android.hardware.Camera;
 import android.os.Bundle;
 import android.app.Activity;
+import android.util.Log;
 import android.view.Menu;
 import android.view.ViewGroup.LayoutParams;
 import android.view.WindowManager;
@@ -12,8 +13,9 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 
-public class MainActivity extends Activity {
+public class CameraDisplayActivity extends Activity {
 
+	private static final String TAG = CameraDisplayActivity.class.getSimpleName();// DEBUG-Message
 	public static Activity act;
 	private static Camera cam;
 	
@@ -70,7 +72,7 @@ public class MainActivity extends Activity {
 	    }
 	    catch (Exception ex)
 	    {
-	        // Camera is not available (in use or does not exist)
+	    	Log.e(TAG, "Camera is not available (in use or does not exist");
 	    }
 	    return cam; // returns null if camera is unavailable
 	}

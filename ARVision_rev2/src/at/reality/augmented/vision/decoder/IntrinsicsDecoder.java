@@ -11,7 +11,6 @@ import android.renderscript.Element;
 import android.renderscript.RenderScript;
 import android.renderscript.ScriptIntrinsicYuvToRGB;
 import android.renderscript.Type;
-import at.reality.augmented.vision.MainActivity;
 import at.reality.augmented.vision.decoder.YUVToRGBDecoder;
 
 // ~50ms!

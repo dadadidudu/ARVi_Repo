@@ -4,14 +4,43 @@
     android:versionName="1.0" >
 
     <uses-sdk
-        android:minSdkVersion="18"
+        android:minSdkVersion="8"
         android:targetSdkVersion="18" />
+    
+    <uses-permission 
+        android:name="android.permission.CAMERA"/>
+    
+    <uses-feature 
+        android:name="android.hardware.camera" />
+    <uses-feature 
+        android:name="android.hardware.camera.autofocus" />
 
     <application
         android:allowBackup="true"
         android:icon="@drawable/ic_launcher"
         android:label="@string/app_name"
-        android:theme="@style/AppTheme" >
+        android:theme="@style/AppTheme"
+        android:hardwareAccelerated="true" >
+        
+        <activity
+            android:name="at.reality.augmented.vision.CameraDisplayActivity"
+            android:label="@string/app_name"
+            android:screenOrientation="landscape"
+            android:multiprocess="false" >
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+        
+        <activity 
+            android:name="at.reality.augmented.vison.DummyActivity"
+            android:label="dummyActivity" >
+            <intent-filter>
+                <!-- insert here when startbutton needed -->
+            </intent-filter>
+        </activity>
+        
     </application>
 
 </manifest>
