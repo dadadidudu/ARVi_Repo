@@ -10,7 +10,7 @@ import android.view.SurfaceView;
 
 public class DrawingSurface extends SurfaceView //implements SurfaceHolder.Callback
 {
-	private static final String TAG = CameraSurface.class.getSimpleName();// DEBUG-Message
+	private static final String TAG = DrawingSurface.class.getSimpleName();// DEBUG-Message
 	
 	private Paint paint = new Paint();
 	private SurfaceHolder holder;

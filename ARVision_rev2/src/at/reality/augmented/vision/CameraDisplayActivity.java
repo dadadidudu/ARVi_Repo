@@ -5,6 +5,7 @@ import android.os.Bundle;
 import android.app.Activity;
 import android.util.Log;
 import android.view.Menu;
+import android.view.SurfaceView;
 import android.view.ViewGroup.LayoutParams;
 import android.view.WindowManager;
 import android.widget.Button;
@@ -19,11 +20,18 @@ public class CameraDisplayActivity extends Activity {
 	public static Activity act;
 	private static Camera cam;
 	
+	private CameraSurface cameraDisplaySurface;
+	private UiSurface uiDisplaySurface;
+	
+	private FrameLayout frameHolder;
+	
 	@Override
 	protected void onCreate(Bundle savedInstanceState)
 	{
 		super.onCreate(savedInstanceState);
 		act = this;
+		
+		frameHolder = new FrameLayout(this);
 		
 		// force total fullscreen and keep screen on
 		getWindow().addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
@@ -40,17 +48,24 @@ public class CameraDisplayActivity extends Activity {
 	}
 	
 	@Override
+	protected void onResume()
+	{
+		super.onResume();
+
+		// create SurfaceView for the camera preview and set it visible
+		cameraDisplaySurface = new CameraSurface(this);
+		frameHolder.addView(cameraDisplaySurface);
+		// same for the UiSurface
+		uiDisplaySurface = new UiSurface(this);
+		frameHolder.addView(uiDisplaySurface);
+	}
+	
+	@Override
 	protected void onPause()
 	{
 		super.onPause();
 	}
-	
-	@Override
-	protected void onResume()
-	{
-		super.onResume();
-	}
-	
+
 	@Override
 	protected void onStop()
 	{
@@ -63,6 +78,11 @@ public class CameraDisplayActivity extends Activity {
 		super.onDestroy();
 	}
 	
+	/**
+	 * returns an instance of the camera. Use only if the camera is not in use,
+	 * else an error-entry to the Log will be made.
+	 * @return an instance of the camera
+	 */
 	private static synchronized final Camera getCameraInstance()
 	{
 		cam = null;
@@ -77,6 +97,10 @@ public class CameraDisplayActivity extends Activity {
 	    return cam; // returns null if camera is unavailable
 	}
 	
+	/**
+	 * starts the previewing of the Camera image data. Only use after
+	 * a PreviewCallback has been set to the Camera 
+	 */
 	private static synchronized final void startPreview()
 	{
 		if (cam != null)

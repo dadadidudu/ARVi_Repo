@@ -37,7 +37,7 @@
             android:name="at.reality.augmented.vison.DummyActivity"
             android:label="dummyActivity" >
             <intent-filter>
-                <!-- insert here when startbutton needed -->
+                <!-- insert here when startbutton-activity needed -->
             </intent-filter>
         </activity>
         
