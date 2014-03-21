@@ -7,7 +7,10 @@ import android.view.SurfaceView;
 public class UiSurface extends SurfaceView {
 	// Debugging-Tag
 	private static final String TAG = UiSurface.class.getSimpleName();
-
+	
+	
+	
+	// --- constructors ---
 	/**
 	 * @param context
 	 */
@@ -34,5 +37,6 @@ public class UiSurface extends SurfaceView {
 		super(context, attrs, defStyle);
 		// TODO Auto-generated constructor stub
 	}
+	// --- constructors end ---
 
 }

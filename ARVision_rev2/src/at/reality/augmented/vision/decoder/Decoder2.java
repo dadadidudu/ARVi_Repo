@@ -1,14 +1,14 @@
 package at.reality.augmented.vision.decoder;
 
-import android.app.Activity;
+import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Bitmap.Config;
-import at.reality.augmented.vision.decoder.YUVToRGBDecoder;
+import at.reality.augmented.vision.decoder.IYuvToRgbDecoder;
 
 // ~150ms
-public class Decoder2 implements YUVToRGBDecoder {
+public class Decoder2 implements IYuvToRgbDecoder {
 	
-	public Decoder2(Activity act) {}
+	public Decoder2(Context context) {}
 	
 	public Bitmap decode(byte[] data, int width, int height)
 	{

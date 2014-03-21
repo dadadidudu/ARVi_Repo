@@ -1,7 +1,7 @@
 package at.reality.augmented.vision.decoder;
 
 import android.annotation.TargetApi;
-import android.app.Activity;
+import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.ImageFormat;
 import android.graphics.Bitmap.Config;
@@ -11,11 +11,11 @@ import android.renderscript.Element;
 import android.renderscript.RenderScript;
 import android.renderscript.ScriptIntrinsicYuvToRGB;
 import android.renderscript.Type;
-import at.reality.augmented.vision.decoder.YUVToRGBDecoder;
+import at.reality.augmented.vision.decoder.IYuvToRgbDecoder;
 
 // ~50ms!
 @TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR2)
-public class IntrinsicsDecoder implements YUVToRGBDecoder {
+public class IntrinsicsDecoder implements IYuvToRgbDecoder {
 
 	// Variablen
 	private RenderScript rs;
@@ -28,8 +28,8 @@ public class IntrinsicsDecoder implements YUVToRGBDecoder {
 	// -> evtl als singleton umsetzen?
 	// oder static RenderScript
 
-	public IntrinsicsDecoder(Activity act) {
-		rs = RenderScript.create(act);
+	public IntrinsicsDecoder(Context context) {
+		rs = RenderScript.create(context);
 		intrinsic = ScriptIntrinsicYuvToRGB.create(rs, Element.U8_4(rs));
 	}
 

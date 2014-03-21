@@ -7,7 +7,7 @@ import android.graphics.Bitmap;
  * @author Daniel Heger
  *
  */
-public interface YUVToRGBDecoder {
+public interface IYuvToRgbDecoder {
 	
 	/**
 	 * decodes YUV image data to RGB data and returns this data
