@@ -6,6 +6,7 @@ import android.hardware.Camera.PreviewCallback;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.SurfaceHolder;
+import android.view.SurfaceHolder.Callback;
 import android.view.SurfaceView;
 import at.reality.augmented.vision.decoder.IYuvToRgbDecoder;
 import at.reality.augmented.vision.decoder.IntrinsicsDecoder;
@@ -55,6 +56,7 @@ public class CameraSurface extends SurfaceView implements SurfaceHolder.Callback
 	@Override
 	public void surfaceCreated(SurfaceHolder holder) {
 		// TODO Auto-generated method stub
+		// ignore: done in run()
 		
 	}
 
@@ -68,6 +70,7 @@ public class CameraSurface extends SurfaceView implements SurfaceHolder.Callback
 	@Override
 	public void surfaceDestroyed(SurfaceHolder holder) {
 		// TODO Auto-generated method stub
+		// ignore: done in stop()
 		
 	}
 
@@ -88,6 +91,10 @@ public class CameraSurface extends SurfaceView implements SurfaceHolder.Callback
 	@Override
 	public void run() {
 		// TODO get and open camera, start preview, etc
+		
+		cam = this.getCameraInstance();
+		
+		
 		
 	}
 	
@@ -113,7 +120,7 @@ public class CameraSurface extends SurfaceView implements SurfaceHolder.Callback
 	 * else an error-entry to the Log will be made.
 	 * @return an instance of the camera
 	 */
-	private static synchronized final Camera getCameraInstance()
+	private synchronized final Camera getCameraInstance()
 	{
 		cam = null;
 	    try
@@ -131,7 +138,7 @@ public class CameraSurface extends SurfaceView implements SurfaceHolder.Callback
 	 * starts the previewing of the Camera image data. Only use after
 	 * a PreviewCallback has been set to the Camera 
 	 */
-	private static synchronized final void startPreview()
+	private synchronized final void startPreview()
 	{
 		if (cam != null)
 		{
