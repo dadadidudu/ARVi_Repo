@@ -22,6 +22,7 @@ public class CameraDisplayActivity extends Activity {
 	
 	private CameraSurface cameraDisplaySurface;
 	private UiSurface uiDisplaySurface;
+	private Thread cameraDisplayThread;
 	
 	private FrameLayout frameHolder;
 	
@@ -52,12 +53,19 @@ public class CameraDisplayActivity extends Activity {
 	{
 		super.onResume();
 
+		frameHolder = new FrameLayout(this);
+		frameHolder.setLayoutParams(new LayoutParams(
+		           LayoutParams.MATCH_PARENT,
+		           LayoutParams.MATCH_PARENT));
+		
 		// create SurfaceView for the camera preview and set it visible
 		cameraDisplaySurface = new CameraSurface(this);
 		frameHolder.addView(cameraDisplaySurface);
+		cameraDisplayThread = new Thread(cameraDisplaySurface, "CameraDisplaySurface_Thread");
+		cameraDisplayThread.start();
 		// same for the UiSurface
-		uiDisplaySurface = new UiSurface(this);
-		frameHolder.addView(uiDisplaySurface);
+//		uiDisplaySurface = new UiSurface(this);
+//		frameHolder.addView(uiDisplaySurface);
 		
 		
 		// and show everything
@@ -68,6 +76,15 @@ public class CameraDisplayActivity extends Activity {
 	protected void onPause()
 	{
 		super.onPause();
+		cameraDisplaySurface.stop();
+		cameraDisplaySurface = null;
+//		uiDisplaySurface = null;
+		try {
+			cameraDisplayThread.join();
+		} catch (InterruptedException ex) {
+			// TODO Auto-generated catch block
+			ex.printStackTrace();
+		}
 	}
 
 	@Override

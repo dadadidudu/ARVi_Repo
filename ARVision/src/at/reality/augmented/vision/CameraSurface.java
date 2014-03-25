@@ -197,6 +197,8 @@ public class CameraSurface extends SurfaceView implements SurfaceHolder.Callback
 		if (cam != null)
 		{
 			cam.stopPreview();
+			cam.setPreviewCallback(null);
+			getHolder().removeCallback(this);
 			cam.release();
 			cam = null;
 		}
