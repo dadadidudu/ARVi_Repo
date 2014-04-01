@@ -38,7 +38,7 @@ public class CameraSurface extends SurfaceView implements SurfaceHolder.Callback
 	/** the RGB-Bitmap that results from a preview frame */
 	private Bitmap previewRGB;
 	/** the decoder used for conversion of YUV to RGB */
-	private IYuvToRgbDecoder decoder;
+	private static IYuvToRgbDecoder decoder;
 
 	
 	// --- constructors ---
@@ -49,7 +49,7 @@ public class CameraSurface extends SurfaceView implements SurfaceHolder.Callback
 		this.surfaceHolder = getHolder();
 		this.surfaceHolder.addCallback(this);
 		this.setFocusable(true);
-		this.initDecoder(context);
+		
 
 		// TODO fill
 		
@@ -59,14 +59,12 @@ public class CameraSurface extends SurfaceView implements SurfaceHolder.Callback
 		super(context, attrs);
 		Log.e(TAG, "wrong method1");
 		// TODO delete this constructor eventually
-		this.initDecoder(context);
 	}
 
 	public CameraSurface(Context context, AttributeSet attrs, int defStyle) {
 		super(context, attrs, defStyle);
 		Log.e(TAG, "wrong method2");
 		// TODO delete this constructor eventually
-		this.initDecoder(context);
 	}
 	
 	private void initDecoder(Context context) {
@@ -77,17 +75,21 @@ public class CameraSurface extends SurfaceView implements SurfaceHolder.Callback
 	@Override
 	public void surfaceCreated(SurfaceHolder holder) {
 		// TODO Auto-generated method stub
+		// initialise decoder
+		this.initDecoder(context);
 		// ignore: done in run()
 		
-//		// TESTING
-//		cam =  this.getCameraInstance();
-//		try {
-//			cam.setPreviewDisplay(holder);
-//			cam.setPreviewCallback(this);
+		// TESTING
+//		if (cam == null) {
+//			this.openCamera();
 //			cameraParams = cam.getParameters();
-//		} catch (IOException ex) {
-//			// TODO Auto-generated catch block
-//			ex.printStackTrace();
+//			try {
+//				cam.setPreviewDisplay(holder);
+//				cam.setPreviewCallback(this);
+//			} catch (IOException ex) {
+//				Log.e(TAG, "Surface unavailable");		
+//				ex.printStackTrace();
+//			}
 //		}
 		
 	}
@@ -127,7 +129,8 @@ public class CameraSurface extends SurfaceView implements SurfaceHolder.Callback
 
 	@Override
 	public void surfaceDestroyed(SurfaceHolder holder) {
-		// TODO Auto-generated method stub
+		// TODO de-initialise decoder
+		decoder = null;
 		// ignore: done in stop()
 		
 //		// TESTING
