@@ -22,7 +22,7 @@ import at.reality.augmented.vision.PreviewThreading.CameraPreviewHandlerThread;
 import at.reality.augmented.vision.decoder.IYuvToRgbDecoder;
 import at.reality.augmented.vision.decoder.IntrinsicsDecoder;
 
-public class CameraSurface extends SurfaceView implements SurfaceHolder.Callback, PreviewCallback, Runnable {
+public class CameraSurface extends SurfaceView implements SurfaceHolder.Callback, PreviewCallback {
 	// Debugging-Tag
 	private static final String TAG = CameraSurface.class.getSimpleName();
 	// executing?
@@ -74,71 +74,57 @@ public class CameraSurface extends SurfaceView implements SurfaceHolder.Callback
 	
 	@Override
 	public void surfaceCreated(SurfaceHolder holder) {
-		// TODO Auto-generated method stub
 		// initialise decoder
 		this.initDecoder(context);
-		// ignore: done in run()
-		
-		// TESTING
-//		if (cam == null) {
-//			this.openCamera();
-//			cameraParams = cam.getParameters();
-//			try {
-//				cam.setPreviewDisplay(holder);
-//				cam.setPreviewCallback(this);
-//			} catch (IOException ex) {
-//				Log.e(TAG, "Surface unavailable");		
-//				ex.printStackTrace();
-//			}
-//		}
 		
 	}
 
 	@Override
 	public void surfaceChanged(SurfaceHolder holder, int format, int width,
-			int height) {
-		// TODO Auto-generated method stub
-		/*
-		Log.e(TAG, "called SurfaceChanged()-method");
+			int height) {		
 
 		if (surfaceHolder.getSurface() == null) // preview surface does not exist
-			return;
-		
-		// stop preview before making changes
-        try
-        {
-            cam.stopPreview();
-        } catch (Exception e){
-          // ignore: tried to stop a non-existent preview
-        }
-        cameraParams.setPreviewSize(width, height);
-        // start preview with new settings
-        try {
-        	cam.setPreviewDisplay(surfaceHolder);
-        	cam.startPreview();
-        } catch (Exception e){
-        	Log.d(TAG, "Error starting camera preview: " + e.getMessage());
-        }
-		 */
-		
-//		// TESTING
-//		cameraParams.setPreviewSize(width, height);    
-//        cam.setParameters(cameraParams); 
-//        cam.startPreview();
+			surfaceHolder = holder;
+        
+        if (cam == null) 
+			this.openCamera();
+        else
+        	cam.stopPreview();
+        // change preview settings, set the PreviewDisplay and PreviewCallack and start the preview
+        cameraParams = cam.getParameters();
+		cameraParams.setPreviewSize(width, height);
+		cam.setParameters(cameraParams);
+		try {
+			cam.setPreviewDisplay(surfaceHolder);
+			cam.setPreviewCallback(this);
+		} catch (IOException ex) {
+			Log.e(TAG, "Surface unavailable");		
+			ex.printStackTrace();
+		}
+		cam.startPreview();
 	}
 
 	@Override
 	public void surfaceDestroyed(SurfaceHolder holder) {
-		// TODO de-initialise decoder
-		decoder = null;
-		// ignore: done in stop()
+				
+		cam.stopPreview();
+		cam.setPreviewCallback(null);
+		getHolder().removeCallback(this);
+		cam.release();
+		cam = null;
+		try {
+			// this line only for API 18+
+			// previewThread.quitSafely();
+			previewThread.quit();
+			previewThread.join(2500);
+		} catch (InterruptedException ex) {
+			ex.printStackTrace();
+		} finally {
+			previewThread = null;
+		}
 		
-//		// TESTING
-//		cam.stopPreview();
-//		cam.setPreviewCallback(null);
-//		getHolder().removeCallback(this);
-//		cam.release();
-//		cam = null;
+		// de-initialise decoder
+		decoder = null;
 	}
 
 	
@@ -154,69 +140,6 @@ public class CameraSurface extends SurfaceView implements SurfaceHolder.Callback
 		Log.d(TAG, "this PreviewFrame is brought to you by: " + Thread.currentThread().getName());
 		Log.d(TAG, "is mythread dead yet? " + Thread.activeCount());
 	}
-
-	@Override
-	public void run() {
-		// TODO get and open camera, start preview, etc
-		
-		if (cam == null) {
-			try {
-				this.openCamera();
-				cam.setPreviewDisplay(surfaceHolder);
-				cam.setPreviewCallback(this);
-				cam.startPreview();
-
-				cameraParams = cam.getParameters();
-				
-			} catch (IOException ex) {
-				Log.e(TAG, "Surface unavailable");
-				ex.printStackTrace();
-			}
-		}
-		else {
-			Log.e(TAG, "Camera in use");
-		}
-		
-	}
-	
-	/**
-	 * returns whether the CameraSurface is running or not
-	 * @return true, if this CameraSurface is running, false otherwise
-	 */
-	private synchronized boolean isStopped() {
-		return this.isStopped;
-	}
-
-	/**
-	 * use this method to stop displaying Camera Preview Data on this Surface
-	 */
-	@TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR2)
-	public synchronized void stop() {
-		this.isStopped = true;
-		// TODO: close camera, clear resources
-		
-		if (cam != null)
-		{
-			cam.stopPreview();
-			cam.setPreviewCallback(null);
-			getHolder().removeCallback(this);
-			cam.release();
-			cam = null;
-			try {
-				previewThread.quitSafely();
-				previewThread.join(2500);
-			} catch (InterruptedException ex) {
-				// TODO Auto-generated catch block
-				ex.printStackTrace();
-			} finally {
-				previewThread = null;
-			}
-		}
-		
-	}
-	
-	
-	
 	
 	/**
 	 * opens the Camera in a separate Thread in the manner that
