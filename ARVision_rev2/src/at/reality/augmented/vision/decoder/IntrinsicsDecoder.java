@@ -29,7 +29,8 @@ public class IntrinsicsDecoder implements IYuvToRgbDecoder {
 	// oder static RenderScript
 
 	public IntrinsicsDecoder(Context context) {
-		rs = RenderScript.create(context);
+		// DEBUG option
+		rs = RenderScript.create(context, RenderScript.ContextType.DEBUG);
 		intrinsic = ScriptIntrinsicYuvToRGB.create(rs, Element.U8_4(rs));
 	}
 

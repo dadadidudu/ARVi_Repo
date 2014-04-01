@@ -6,6 +6,8 @@ import android.annotation.TargetApi;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Color;
+import android.graphics.PixelFormat;
 import android.hardware.Camera;
 import android.hardware.Camera.Parameters;
 import android.hardware.Camera.PreviewCallback;
@@ -125,6 +127,7 @@ public class CameraSurface extends SurfaceView implements SurfaceHolder.Callback
 		
 		// de-initialise decoder
 		decoder = null;
+		System.gc();
 	}
 
 	
@@ -138,7 +141,15 @@ public class CameraSurface extends SurfaceView implements SurfaceHolder.Callback
 	public void onPreviewFrame(byte[] data, Camera camera) {
 		// TODO Auto-generated method stub
 		Log.d(TAG, "this PreviewFrame is brought to you by: " + Thread.currentThread().getName());
-		Log.d(TAG, "is mythread dead yet? " + Thread.activeCount());
+//		Log.d(TAG, "is mythread dead yet? " + Thread.activeCount());
+		
+		previewRGB = decoder.decode(data,
+				camera.getParameters().getPictureSize().width,
+				camera.getParameters().getPictureSize().height);
+		int colorDings = previewRGB.getPixel(0, 0);
+		Log.i(TAG, "Value of top left pixel is: A = " + Color.alpha(colorDings) + ", R = " +
+				+ Color.red(colorDings) + ", G = " + Color.green(colorDings) + ", B = " +
+				+ Color.blue(colorDings));
 	}
 	
 	/**
@@ -146,15 +157,12 @@ public class CameraSurface extends SurfaceView implements SurfaceHolder.Callback
 	 * onPreviewFrame() can be executed in that Thread.
 	 */
 	private final void openCamera() {
-//		if (previewThread == null)
-		{
-	        previewThread = new CameraPreviewHandlerThread();
-	    }
 
-	    synchronized (previewThread) {
-	        this.cam = previewThread.openCamera();
-//	    	previewThread.openCamera();
-	    }
+		previewThread = new CameraPreviewHandlerThread();
+
+		synchronized (previewThread) {
+			this.cam = previewThread.openCamera();
+		}
 	}
 	
 	/**
