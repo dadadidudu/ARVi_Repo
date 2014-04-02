@@ -139,11 +139,11 @@ public class CameraSurface extends SurfaceView implements SurfaceHolder.Callback
 	 */
 	@Override
 	public void onPreviewFrame(byte[] data, Camera camera) {
-		// TODO Auto-generated method stub
-		Log.d(TAG, "this PreviewFrame is brought to you by: " + Thread.currentThread().getName());
-//		Log.d(TAG, "is mythread dead yet? " + Thread.activeCount());
 		
+		// decode to Bitmap
 		if (camera != null) {
+			Log.d(TAG, "this PreviewFrame is brought to you by: " + Thread.currentThread().getName());
+
 			previewRGB = decoder.decode(data,
 					cameraParams.getPreviewSize().width,
 					cameraParams.getPreviewSize().height);
@@ -189,17 +189,17 @@ public class CameraSurface extends SurfaceView implements SurfaceHolder.Callback
 		{
 			case MotionEvent.ACTION_HOVER_ENTER:
 			{
-				Log.d(TAG, "HOVER enter on --- X: " + event.getX() + " - Y: " + event.getY());
+				Log.i(TAG, "HOVER enter on --- X: " + event.getX() + " - Y: " + event.getY());
 				break;
 			}
 			case MotionEvent.ACTION_HOVER_MOVE:
 			{
-				Log.d(TAG, "HOVER moves on --- X: " + event.getX() + " - Y: " + event.getY());
+				Log.i(TAG, "HOVER moves on --- X: " + event.getX() + " - Y: " + event.getY());
 				break;
 			}
 			case MotionEvent.ACTION_HOVER_EXIT:
 			{
-				Log.d(TAG, "HOVER exit on --- X: " + event.getX() + " - Y: " + event.getY());
+				Log.i(TAG, "HOVER exit on --- X: " + event.getX() + " - Y: " + event.getY());
 				break;
 			}
 		}
@@ -220,58 +220,4 @@ public class CameraSurface extends SurfaceView implements SurfaceHolder.Callback
 			this.cam = previewThread.openCamera();
 		}
 	}
-	
-	/**
-	 * returns an instance of the camera. Use only if the camera is not in use,
-	 * else an error-entry to the Log will be made and cam will remain null.
-	 */
-	/*
-	private final static void getCameraInstance()
-	{
-		cam = null;
-	    try
-	    {
-	        cam = Camera.open(); // attempt to get a Camera instance
-	        Log.i(TAG, "Camera reeived, is "+ cam.toString());
-	        Log.d(TAG, "this Camera was opened by: " + Thread.currentThread().getName());
-	    }
-	    catch (Exception ex)
-	    {
-	    	Log.e(TAG, "Camera is not available (in use or does not exist");
-	    }
-	}
-	
-	
-	private final static class CameraPreviewHandlerThread extends HandlerThread {
-		Handler mHandler = null;
-
-	    CameraPreviewHandlerThread() {
-	        super("CameraHandlerThread");
-	        start();
-	        mHandler = new Handler(getLooper());
-	    }
-
-	    synchronized void notifyCameraOpened() {
-	        notify();
-	    }
-
-	    void openCamera() {
-	        mHandler.post(new Runnable() {
-	            @Override
-	            public void run() {
-	                getCameraInstance();
-	                notifyCameraOpened();
-	            }
-	        });
-	        try {
-	            wait();
-	        }
-	        catch (InterruptedException e) {
-	            Log.w(TAG, "wait was interrupted");
-	        }
-	    }
-	}
-	*/
-	
-
 }

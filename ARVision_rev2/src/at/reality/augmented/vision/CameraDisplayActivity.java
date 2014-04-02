@@ -88,38 +88,4 @@ public class CameraDisplayActivity extends Activity {
 	{
 		super.onDestroy();
 	}
-	
-//	/**
-//	 * returns an instance of the camera. Use only if the camera is not in use,
-//	 * else an error-entry to the Log will be made.
-//	 * @return an instance of the camera
-//	 */
-//	private static synchronized final Camera getCameraInstance()
-//	{
-//		cam = null;
-//	    try
-//	    {
-//	        cam = Camera.open(); // attempt to get a Camera instance
-//	    }
-//	    catch (Exception ex)
-//	    {
-//	    	Log.e(TAG, "Camera is not available (in use or does not exist");
-//	    }
-//	    return cam; // returns null if camera is unavailable
-//	}
-//	
-//	/**
-//	 * starts the previewing of the Camera image data. Only use after
-//	 * a PreviewCallback has been set to the Camera 
-//	 */
-//	private static synchronized final void startPreview()
-//	{
-//		if (cam != null)
-//		{
-//			try
-//			{
-//				cam.startPreview();
-//			} catch (Exception ex) {}
-//		}
-//	}
 }
