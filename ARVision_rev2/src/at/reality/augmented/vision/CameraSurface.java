@@ -17,6 +17,7 @@ import android.os.Handler;
 import android.os.HandlerThread;
 import android.util.AttributeSet;
 import android.util.Log;
+import android.view.MotionEvent;
 import android.view.SurfaceHolder;
 import android.view.SurfaceHolder.Callback;
 import android.view.SurfaceView;
@@ -27,8 +28,7 @@ import at.reality.augmented.vision.decoder.IntrinsicsDecoder;
 public class CameraSurface extends SurfaceView implements SurfaceHolder.Callback, PreviewCallback {
 	// Debugging-Tag
 	private static final String TAG = CameraSurface.class.getSimpleName();
-	// executing?
-	private boolean isStopped = false;
+	
 	private Context context;
 	private SurfaceHolder surfaceHolder;
 	
@@ -118,7 +118,7 @@ public class CameraSurface extends SurfaceView implements SurfaceHolder.Callback
 			// this line only for API 18+
 			// previewThread.quitSafely();
 			previewThread.quit();
-			previewThread.join(2500);
+			previewThread.join();
 		} catch (InterruptedException ex) {
 			ex.printStackTrace();
 		} finally {
@@ -143,15 +143,71 @@ public class CameraSurface extends SurfaceView implements SurfaceHolder.Callback
 		Log.d(TAG, "this PreviewFrame is brought to you by: " + Thread.currentThread().getName());
 //		Log.d(TAG, "is mythread dead yet? " + Thread.activeCount());
 		
-		previewRGB = decoder.decode(data,
-				camera.getParameters().getPictureSize().width,
-				camera.getParameters().getPictureSize().height);
-		int colorDings = previewRGB.getPixel(0, 0);
-		Log.i(TAG, "Value of top left pixel is: A = " + Color.alpha(colorDings) + ", R = " +
-				+ Color.red(colorDings) + ", G = " + Color.green(colorDings) + ", B = " +
-				+ Color.blue(colorDings));
+		if (camera != null) {
+			previewRGB = decoder.decode(data,
+					cameraParams.getPreviewSize().width,
+					cameraParams.getPreviewSize().height);
+			int colorDings = previewRGB.getPixel(0, 0);
+			Log.i(TAG,
+					"Value of top left pixel is: A = "
+							+ Color.alpha(colorDings) + ", R = "
+							+ +Color.red(colorDings) + ", G = "
+							+ Color.green(colorDings) + ", B = "
+							+ +Color.blue(colorDings));
+		}
 	}
 	
+	@Override
+	public boolean onTouchEvent(MotionEvent event) {
+		
+		switch (event.getAction() & MotionEvent.ACTION_MASK)
+		{
+			case MotionEvent.ACTION_DOWN:
+			{
+				Log.i(TAG, "DOWN --- X: " + event.getX() + " - Y: " + event.getY());
+				break;
+			}
+			case MotionEvent.ACTION_MOVE:
+			{
+				Log.i(TAG, "MOVE --- X: " + event.getX() + " - Y: " + event.getY());
+				break;
+			}
+			case MotionEvent.ACTION_UP:
+			{
+				Log.i(TAG, "UP --- X: " + event.getX() + " - Y: " + event.getY());
+				break;
+			}
+		}
+		
+		return true;
+	}
+	
+	@Override
+	public boolean onHoverEvent(MotionEvent event)
+	{
+		switch (event.getAction() & MotionEvent.ACTION_MASK)
+		{
+			case MotionEvent.ACTION_HOVER_ENTER:
+			{
+				Log.d(TAG, "HOVER enter on --- X: " + event.getX() + " - Y: " + event.getY());
+				break;
+			}
+			case MotionEvent.ACTION_HOVER_MOVE:
+			{
+				Log.d(TAG, "HOVER moves on --- X: " + event.getX() + " - Y: " + event.getY());
+				break;
+			}
+			case MotionEvent.ACTION_HOVER_EXIT:
+			{
+				Log.d(TAG, "HOVER exit on --- X: " + event.getX() + " - Y: " + event.getY());
+				break;
+			}
+		}
+		return true;
+	}
+	
+	
+	// --------------
 	/**
 	 * opens the Camera in a separate Thread in the manner that
 	 * onPreviewFrame() can be executed in that Thread.
