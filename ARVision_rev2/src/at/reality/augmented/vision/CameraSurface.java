@@ -214,7 +214,8 @@ public class CameraSurface extends SurfaceView implements SurfaceHolder.Callback
 	 */
 	private final void openCamera() {
 
-		previewThread = new CameraPreviewHandlerThread();
+		if (previewThread == null)
+			previewThread = new CameraPreviewHandlerThread();
 
 		synchronized (previewThread) {
 			this.cam = previewThread.openCamera();
